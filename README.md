@@ -1,5 +1,7 @@
 This tutorial is designed to walk customers through adding tracing to AWS Lambda functions and monitoring their execution. At the outset, we will have a single APM service dashboard with linked tracing, execution metrics, and logs.
 
+![elastic_apm](docs/elastic_apm.gif "Elastic APM")
+
 # AWS Lambda Setup 
 
 # Exemplary Code
