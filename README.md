@@ -264,7 +264,6 @@ PUT _ingest/pipeline/metrics-aws.lambda@custom
       "set": {
         "field": "service.name",
         "copy_from": "aws.dimensions.FunctionName",
-        "ignore_missing": true,
         "ignore_failure": true
       }
     }
