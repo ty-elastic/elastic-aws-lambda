@@ -2,6 +2,42 @@ This tutorial is designed to walk customers through adding tracing to AWS Lambda
 
 ![elastic_apm](docs/elastic_apm.gif "Elastic APM")
 
+# Architecture
+
+```mermaid
+flowchart TB
+    subgraph Elastic
+    IngestPipeline[Ingest Pipelines; add service.name]
+    APMServer[APM Serer]
+    Elasticsearch
+    end
+
+    subgraph AWS
+    subgraph Lambda
+    subgraph AutoInstrumentation[Auto Instrumentation Layer]
+    Function[Lambda Function]
+    end
+    ADOTc[OTel Collector Layer]
+    end
+    CloudWatch[CloudWatch Logs]
+    subgraph EC2
+    ElasticAgent[Elastic Agent]
+    end
+
+    Lambda == metric API (pull) ==> ElasticAgent
+    Function == logs (push) ==> CloudWatch
+    CloudWatch == log API (pull) ==> ElasticAgent
+
+    Function == OTLP traces (push) ==> ADOTc
+    ADOTc == OTLP traces (push) ==> APMServer
+    ElasticAgent == logs+metrics (push) ==> IngestPipeline
+    APMServer ==> Elasticsearch
+    IngestPipeline ==> Elasticsearch
+    end
+
+
+```
+
 # AWS Lambda Setup 
 
 # Exemplary Code
