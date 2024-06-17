@@ -8,7 +8,7 @@ This tutorial is designed to walk customers through adding tracing to AWS Lambda
 flowchart TB
     subgraph Elastic
     IngestPipeline[Ingest Pipelines; add service.name]
-    APMServer[APM Serer]
+    APMServer[APM Server]
     Elasticsearch
     end
 
@@ -28,7 +28,7 @@ flowchart TB
     Function == logs (push) ==> CloudWatch
     CloudWatch == log API (pull) ==> ElasticAgent
 
-    Function == OTLP traces (push) ==> ADOTc
+    AutoInstrumentation == OTLP traces (push) ==> ADOTc
     ADOTc == OTLP traces (push) ==> APMServer
     ElasticAgent == logs+metrics (push) ==> IngestPipeline
     APMServer ==> Elasticsearch
