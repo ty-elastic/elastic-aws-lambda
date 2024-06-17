@@ -14,10 +14,10 @@ flowchart TB
 
     subgraph AWS
     subgraph Lambda
-    subgraph AutoInstrumentation[Auto Instrumentation Layer]
+    subgraph AutoInstrumentation[ADOT Auto Instrumentation Layer]
     Function[Lambda Function]
     end
-    ADOTc[OTel Collector Layer]
+    ADOTc[ADOT OTel Collector Layer]
     end
     CloudWatch[CloudWatch Logs]
     subgraph EC2
