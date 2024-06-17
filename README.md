@@ -1,6 +1,8 @@
-# AWS Lambda Setup
+This tutorial is designed to walk customers through adding tracing to AWS Lambda functions and monitoring their execution. At the outset, we will have a single APM service dashboard with linked tracing, execution metrics, and logs.
 
-## Code
+# AWS Lambda Setup 
+
+# Exemplary Code
 
 Select an existing Lambda function, or create a new one. If creating a new Lambda function for exemplary purposes, consider the following code:
 
@@ -62,6 +64,8 @@ From your Lambda function page,
 3. Use ARN `arn:aws:lambda:us-east-2:901920570463:layer:aws-otel-python-amd64-ver-1-24-0:1`
     * you can find the latest release for your target language [here](https://aws-otel.github.io/docs/getting-started/lambda/lambda-python)
 
+![lambda_layer](docs/lambda_layer.png "Lambda Layer")
+
 ## ENV variables
 
 You will need to set certain environmental variables for your Lambda execution environment:
@@ -79,6 +83,8 @@ And then select `Add environment variable` for each of the following:
 * `OPENTELEMETRY_COLLECTOR_CONFIG_FILE=/var/task/collector.yaml`
     * tells ADOT where to find the OTel Collector configuration file (we will be creating this shortly)
 
+![lambda_env](docs/lambda_env.png "Lambda Env")
+
 ## Configuration
 
 1. Select `Configuration`
@@ -87,6 +93,8 @@ And then select `Add environment variable` for each of the following:
 4. Set `Timeout` to `9` seconds (to allow ADOT layer time to flush trace data)
 
 * Note: for external tracing, there is no not need to turn on Active Tracing (X-Ray)
+
+![lambda_config](docs/lambda_config.png "Lambda Config")
 
 ## Collector Configuration
 
@@ -104,6 +112,8 @@ First, you will need to obtain your Elasticsearch endpoint and APM secret token.
 From here, make note of the values of:
 * `OTEL_EXPORTER_OTLP_ENDPOINT`
 * `OTEL_EXPORTER_OTLP_HEADERS`
+
+![elastic_apm](docs/elastic_apm.png "Elastic APM")
 
 ### collector.yaml
 
@@ -148,12 +158,14 @@ service:
       exporters: [otlp/elastic]
 ```
 
-* where `endpoint` should be the value of `OTEL_EXPORTER_OTLP_ENDPOINT` (copied above), but **WITHOUT** the `https://` prefix.
-* where `headers/Authorization` should be the `Bearer xyz123` portion of `OTEL_EXPORTER_OTLP_HEADERS` (copied above); do not include `Authorization=` and obviously replace `xyz123` with the actual value of your bearer token
+* where `endpoint:` should be the value of `OTEL_EXPORTER_OTLP_ENDPOINT` (copied above), but **WITHOUT** the `https://` prefix
+* where `headers/Authorization:` should be the `Bearer xyz123` portion of `OTEL_EXPORTER_OTLP_HEADERS` (copied above); do not include `Authorization=`
 
 Now save the file:
 1) Select Menu `File` > `Save`
 2) Name the file `collector.yaml`
+
+![lambda_collector](docs/lambda_collector.png "Lambda Collector")
 
 # Setup Elastic
 
@@ -167,7 +179,7 @@ Create an appropriately sized EC2 instance to host Elastic Agent. Depending on t
 
 1) Select `Management` > `Fleet`
 2) Select `Add agent`
-3) `Create a new agent policy`
+3) Select `Create a new agent policy`
 4) Name it `AWS`
 5) Select `Create policy`
 6) Select `Enroll in Fleet (recommended)`
@@ -175,7 +187,8 @@ Create an appropriately sized EC2 instance to host Elastic Agent. Depending on t
 8) SSH into your EC2 instance
 9) Copy/paste the commands to install Elastic Agent
 10) Wait for `Confirm agent enrollment` to confirm telemetry reception
-11) 
+
+![elastic_agent](docs/elastic_agent.png "Elastic Agent")
 
 ## Add AWS Integration
 
@@ -193,15 +206,18 @@ Use appropriately configured IAM for your EC2 instance or create an `Access Key 
 Enable collection of at least:
 * `Collect logs from CloudWatch`
     * Set `Dataset name` = `aws.cloudwatch_logs`
+
+![elastic_aws_cloudwatch](docs/elastic_aws_cloudwatch.png "Elastic AWS CloudWatch")
+
 * `Collect Lambda metrics`
 
 and potentially disable all other features (for now)
 
 ### Ingest pipelines
 
-To allow correlation of Lambda logs from Cloudwatch and Lambda metrics into the APM UX, we need to ensure `service.name` is set. We can do this using Elastic Ingest Pipelines.
+To allow correlation of Lambda logs from Cloudwatch and Lambda metrics into the APM UX, we need to ensure `service.name` is set appropriately. We can do this using Elastic Ingest Pipelines.
 
-You can create Ingest Pipelines using our UI (`Management` > `Stack Management` > `Ingest Pipelines`) or via API using DevTools. Since we are simply deploying pipelines I've already developed here, I would suggest using DevTools (`Management` > `DevTools`).
+You can create Ingest Pipelines using our UI (`Management` > `Stack Management` > `Ingest Pipelines`) or via API using DevTools. Since we are simply deploying pipelines I've already developed, I would suggest using DevTools (`Management` > `DevTools`).
 
 ### logs-aws.cloudwatch_logs@custom
 
@@ -245,7 +261,7 @@ PUT _ingest/pipeline/metrics-aws.lambda@custom
 
 ## APM Service Dashboard Linkage
 
-Exercise your Lambda a test or a real REST (via API Gateway) call in order to generate some exemplary data into Elasticsearch.
+Exercise your Lambda using a test or a real REST (via API Gateway) call in order to generate some exemplary data into Elasticsearch.
 
 1) Find your Lambda service in Elastic APM (`Observability` > `APM`)
 2) Select Lambda service
@@ -253,6 +269,8 @@ Exercise your Lambda a test or a real REST (via API Gateway) call in order to ge
 4) Select `Link dashboard`
 5) Select dashboard `[Metrics AWS] Lambda Overview`
     * `Filter by service and environment` enabled
+
+![elastic_apm_dashboard](docs/elastic_apm_dashboard.png "Elastic APM Dashboard")
 
 # Explore!
 
@@ -263,3 +281,5 @@ Exercise your Lambda through RESTful calls.
 * `Transactions` will show transactions into your `lambda_function.lambda_handler`
     * note `GET` and `PUT` transactions are coupled together since they are handled by a singular Python entry point
     * note that tracing extends into our dependencies (in this example, DynamoDB); if you call into other instrumented functions, you will see distributed traces into those functions as well
+
+![elastic_apm](docs/elastic_apm.gif "Elastic APM")
