@@ -201,15 +201,24 @@ Create an appropriately sized EC2 instance to host Elastic Agent. Depending on t
 
 Use appropriately configured IAM for your EC2 instance or create an `Access Key ID` and `Secret Access Key` from your AWS Profile. See [here](https://www.elastic.co/docs/current/integrations/aws) for more information.
 
+If you are configuring for a AWS Access Key, select `Third-party service` as the `Use case`
+
+![aws_accesskey](docs/aws_accesskey.png "AWS Access Key")
+
 ### Features
 
 Enable collection of at least:
 * `Collect logs from CloudWatch`
-    * Set `Dataset name` = `aws.cloudwatch_logs`
+    1. Expand `Change defaults`
+    2. Here, I'm looking to just collect Lambda logs, so set `Log Group Name Prefix` to `/aws/lambda/`. You will also then need to set the region this Lambda is running in; for me, that's `Region Name` set to `us-east-2`. You could also collect by Log Group ARN.
+    3. Set `Dataset name` = `aws.cloudwatch_logs` 
 
-![elastic_aws_cloudwatch](docs/elastic_aws_cloudwatch.png "Elastic AWS CloudWatch")
+![elastic_aws_cloudwatch_enable](docs/elastic_aws_cloudwatch_enable.png "Elastic AWS CloudWatch")
+![elastic_aws_cloudwatch_dataset](docs/elastic_aws_cloudwatch_dataset.png "Elastic AWS CloudWatch Dataset")
 
 * `Collect Lambda metrics`
+
+![elastic_aws_lambda_enable](docs/elastic_aws_lambda_enable.png "Elastic AWS Lambda")
 
 and potentially disable all other features (for now)
 
@@ -239,6 +248,8 @@ PUT _ingest/pipeline/logs-aws.cloudwatch_logs@custom
 }
 ```
 
+![elastic_devtools_cloudwatch_logs_custom](docs/elastic_devtools_cloudwatch_logs_custom.png "Elastic Cloudwatch Logs Pipeline")
+
 ### metrics-aws.lambda@custom
 
 This pipeline will extract the service name from the `aws.dimensions.FunctionName` and save it to a new field `service.name`.
@@ -258,6 +269,8 @@ PUT _ingest/pipeline/metrics-aws.lambda@custom
   ]
 }
 ```
+
+![elastic_devtools_lambda_custom](docs/elastic_devtools_lambda_custom.png "Elastic Lambda Pipeline")
 
 ## APM Service Dashboard Linkage
 
