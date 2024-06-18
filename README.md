@@ -205,6 +205,14 @@ Now save the file:
 
 ![lambda_collector](docs/lambda_collector.png "Lambda Collector")
 
+### Testing
+
+Assuming you have provisioned an appropriate API Gateway endpoint (with attachment to this Lambda function), you can manually invoke it via something like:
+
+```
+curl -X "PUT" -H "Content-Type: application/json" -d "{\"id\": \"123\", \"price\": 12345, \"name\": \"myitem\"}" https://abc123.execute-api.us-east-2.amazonaws.com/items
+```
+
 # Setup Elastic
 
 To export Lambda metrics (and metrics from other supporting services, like API Gateway), we will need an Elastic Agent. The Agent needn't run within AWS/EC2, although doing so allows you to use IAM authentication rather than API secrets.
